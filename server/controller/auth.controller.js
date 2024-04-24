@@ -1,5 +1,4 @@
 const { validationResult } = require('express-validator')
-const {secret} = require('../config')
 const authService = require('../service/auth-service');
 const ApiError = require('../exeptions/api-error')
 
@@ -9,7 +8,7 @@ const generateAccessToken = (id , role) => {
         id,
         role
     }
-    return jwt.sign(payload,secret, {expiresIn: "24h"})
+    return jwt.sign(payload,process.env.JWT_ACCESS_SECRET, {expiresIn: "24h"})
 }
 
 class AuthController{
@@ -19,9 +18,9 @@ class AuthController{
             if(!errors.isEmpty()){
                 return next(ApiError.BadRequest('Ошибка при валидации', errors.array()))
             }
-            const {email, password} = req.body;
+            const {email, password, name} = req.body;
             
-            const userData = await authService.registration(email, password)
+            const userData = await authService.registration(email, password, name)
 
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30*24*60*60*1000, httpOnly: true})
 
@@ -79,13 +78,23 @@ class AuthController{
 
     }
 
-    async getUsers(req,res) {
+    async updatePassword (req, res,next){
         try{
-            const users = await db.query('SELECT * FROM users')
-            res.json(users.rows)
+            const errors = validationResult(req)
+            if(!errors.isEmpty()){
+                return next(ApiError.BadRequest('Ошибка при валидации', errors.array()))
+            }
+            const {oldPassword, newPassword} = req.body;
+            const id = req.user.id;
+            const userData = await authService.updatePassword(oldPassword,newPassword,id);
+            res.cookie('refreshToken', userData.refreshToken, {maxAge: 30*24*60*60*1000, httpOnly: true})
+            return res.json(userData);
+
+
         }catch(e){
             next(e);
         }
     }
+
 }
 module.exports = new AuthController();

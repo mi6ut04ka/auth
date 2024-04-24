@@ -1,5 +1,3 @@
-const jwt = require('jsonwebtoken');
-const {secret} = require('../config')
 const ApiError = require('../exeptions/api-error')
 const tokenService = require('../service/token-service')
 

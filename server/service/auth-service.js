@@ -7,15 +7,17 @@ const UserDto = require('../dtos/user-dto')
 const ApiError = require('../exeptions/api-error')
 
 class authService {
-    async registration(email, password){
+    async registration(email, password, name){
         const candidate = await db.query('SELECT * FROM users WHERE email = $1', [email])
             if (candidate.rowCount) {
                 throw ApiError.BadRequest(`Пользователь с почтой ${email} уже существует`)
             }
         const hashPassword = bcrypt.hashSync(password, 7);
         const activationLink = uuid.v4();
-
-        const user = await db.query(`INSERT INTO users (email, password, role, activationLink) values ($1,$2,'user',$3) RETURNING *`,[email,hashPassword,activationLink])
+        
+        name? null : name = 'user_'+ uuid.v1().split('-')[0];
+        
+        const user = await db.query(`INSERT INTO users (email, password, role, activationLink, name) values ($1,$2,'user',$3, $4) RETURNING *`,[email,hashPassword,activationLink,name])
         await mailService.sendActivatonMail(email, `${process.env.API_URL}/api/activate/${activationLink}`);
 
         const userDto = new UserDto(user.rows[0]);
@@ -73,6 +75,18 @@ class authService {
         const tokens = tokenService.generateTokens({...userDto});
         await tokenService.saveToken(userDto.id,tokens.refreshToken);
         return {...tokens, user: userDto}
+    }
+    async updatePassword(oldPassword, newPassword,id){
+        const userData = await db.query('SELECT * FROM users WHERE id = $1', [id])
+        const validPassword = await bcrypt.compare(oldPassword, userData.rows[0].password)
+
+        if(!validPassword){
+            throw ApiError.BadRequest('Введен неверный пароль')
+        }
+        const hashPassword = bcrypt.hashSync(newPassword, 7);
+        const user = await db.query('UPDATE users SET password = $1 RETURNING *',[hashPassword])
+
+        return(user.rows[0])
     }
 }
 

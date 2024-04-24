@@ -47,3 +47,15 @@ create TABLE token(
     refreshToken VARCHAR(255),
     FOREIGN KEY (id_user) REFERENCES users (id)
 );
+
+CREATE TABLE files (
+  id SERIAL PRIMARY KEY,
+  filename VARCHAR(255) NOT NULL,
+  mimetype VARCHAR(100),
+  size INTEGER,
+  id_user INTEGER,
+  FOREIGN KEY (id_user) REFERENCES users (id)
+);
+
+ALTER TABLE users
+DROP COLUMN imageUrl;

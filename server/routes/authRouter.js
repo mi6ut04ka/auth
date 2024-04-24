@@ -1,13 +1,10 @@
-const Router = require('express')
 const authController = require('../controller/auth.controller')
-const userController = require('../controller/users.controller')
+const Router = require('express')
 const {check} = require('express-validator')
 const authMiddleware = require('../middleware/authMiddleware')
-const roleMiddleware = require('../middleware/roleMiddleware')
 
 
 const router = new Router();
-
 
 router.post('/registration',
     [check('email', 'Введите корректный email').isEmail(),
@@ -17,6 +14,8 @@ router.post('/login',[check('email', 'Введите корректный email'
 router.post('/logout', authController.logout)
 router.get('/activate/:link', authController.activate)
 router.get('/refresh', authController.refresh)
-router.get('/users',roleMiddleware('admin'),authMiddleware,userController.getUsers)
+router.post('/updatepassword',[
+    check('newPassword', 'Пароль должен содержать не менее 8 символов').isLength({min:8})
+],authMiddleware,authController.updatePassword)
 
 module.exports = router;

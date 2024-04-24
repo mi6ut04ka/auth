@@ -1,21 +1,27 @@
-require('dotenv').config();
 const express = require('express');
+require('dotenv').config();
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const authRouter = require('./routes/authRouter')
-const errorMiddleware = require('./middleware/errorMiddleware')
+const fileRouter = require('./routes/fileRouter')
+const userRouter = require('./routes/userRouter')
+const errorMiddleware = require('./middleware/errorMiddleware');
+const fileUpload = require('express-fileupload');
 
 const PORT = process.env.PORT || 8000
 
 const app = express();
-
-app.use(express.json())
+app.use(fileUpload({}))
+app.use(express.static('static'));
+app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
     credentials:true,
     origin: process.env.CLIENT_URL
 }));
+app.use("/api/file", fileRouter);
 app.use("/api", authRouter);
+app.use("/api", userRouter)
 app.use(errorMiddleware);
 
 
