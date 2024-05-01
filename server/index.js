@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser')
 const authRouter = require('./routes/authRouter')
 const fileRouter = require('./routes/fileRouter')
 const userRouter = require('./routes/userRouter')
+const questionsRouter = require('./routes/questionsRouter')
 const errorMiddleware = require('./middleware/errorMiddleware');
 const fileUpload = require('express-fileupload');
 
@@ -20,6 +21,7 @@ app.use(cors({
     origin: process.env.CLIENT_URL
 }));
 app.use("/api/file", fileRouter);
+app.use('/api/questions',questionsRouter)
 app.use("/api", authRouter);
 app.use("/api", userRouter)
 app.use(errorMiddleware);

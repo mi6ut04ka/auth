@@ -13,6 +13,5 @@ module.exports = class UserDto{
         this.role = model.role;
         this.name = model.name;
         this.avatar = model.avatar;
-
     }
 }

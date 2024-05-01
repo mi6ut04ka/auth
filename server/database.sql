@@ -31,7 +31,7 @@ create TABLE questions(
     id SERIAL PRIMARY KEY,
     id_category INTEGER,
     question VARCHAR(1000),
-    FOREIGN KEY (id) REFERENCES category (id)
+    FOREIGN KEY (id_category) REFERENCES category (id)
 );
 
 create TABLE answers(
